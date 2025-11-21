@@ -98,7 +98,6 @@ class Tensor:
         else:
             data[current_indices] = lst
 
-
 class MunermanTensorMultiplier:
     @staticmethod
     def method1_cayley_square(tensor_a, tensor_b):
@@ -380,9 +379,6 @@ class MunermanTensorMultiplier:
                     result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
         return Tensor(4, result_data)
 
-
-
-
 class TensorOperations:
     @staticmethod
     def multiply_tensors(tensor_a, tensor_b, method, dimension_type):
@@ -393,39 +389,71 @@ class TensorOperations:
             tensor_a: первый тензор
             tensor_b: второй тензор
             method: номер метода (1-5)
-            dimension_type: тип размерности ('square' для 3D, '4d' для 4D)
+            dimension_type: тип размерности ('square' для 3D, '4d' для 4D, 'mixed' для смешанного)
         """
         multiplier = MunermanTensorMultiplier()
 
+        # Определяем тип умножения на основе размерностей тензоров
+        if tensor_a.dimension == 3 and tensor_b.dimension == 3:
+            dim_type = 'square'
+        elif tensor_a.dimension == 4 and tensor_b.dimension == 4:
+            dim_type = '4d'
+        elif tensor_a.dimension == 3 and tensor_b.dimension == 4:
+            dim_type = '3d_4d'
+        elif tensor_a.dimension == 4 and tensor_b.dimension == 3:
+            dim_type = '4d_3d'
+        else:
+            raise ValueError(f"Unsupported tensor dimensions: A={tensor_a.dimension}D, B={tensor_b.dimension}D")
+
         if method == 1:
-            if dimension_type == 'square':
+            if dim_type == 'square':
                 return multiplier.method1_cayley_square(tensor_a, tensor_b)
-            else:  # '4d'
+            elif dim_type == '4d':
                 return multiplier.method1_cayley_4d(tensor_a, tensor_b)
+            elif dim_type == '3d_4d':
+                return multiplier.method1_cayley_3d_4d(tensor_a, tensor_b)
+            elif dim_type == '4d_3d':
+                return multiplier.method1_cayley_4d_3d(tensor_a, tensor_b)
 
         elif method == 2:
-            if dimension_type == 'square':
+            if dim_type == 'square':
                 return multiplier.method2_cayley_square(tensor_a, tensor_b)
-            else:  # '4d'
+            elif dim_type == '4d':
                 return multiplier.method2_cayley_4d(tensor_a, tensor_b)
+            elif dim_type == '3d_4d':
+                return multiplier.method2_cayley_3d_4d(tensor_a, tensor_b)
+            elif dim_type == '4d_3d':
+                return multiplier.method2_cayley_4d_3d(tensor_a, tensor_b)
 
         elif method == 3:
-            if dimension_type == 'square':
+            if dim_type == 'square':
                 return multiplier.method3_scott_square(tensor_a, tensor_b)
-            else:  # '4d'
+            elif dim_type == '4d':
                 return multiplier.method3_scott_4d(tensor_a, tensor_b)
+            elif dim_type == '3d_4d':
+                return multiplier.method3_scott_3d_4d(tensor_a, tensor_b)
+            elif dim_type == '4d_3d':
+                return multiplier.method3_scott_4d_3d(tensor_a, tensor_b)
 
         elif method == 4:
-            if dimension_type == 'square':
+            if dim_type == 'square':
                 return multiplier.method4_scott_square(tensor_a, tensor_b)
-            else:  # '4d'
+            elif dim_type == '4d':
                 return multiplier.method4_scott_4d(tensor_a, tensor_b)
+            elif dim_type == '3d_4d':
+                return multiplier.method4_scott_3d_4d(tensor_a, tensor_b)
+            elif dim_type == '4d_3d':
+                return multiplier.method4_scott_4d_3d(tensor_a, tensor_b)
 
         elif method == 5:
-            if dimension_type == 'square':
+            if dim_type == 'square':
                 return multiplier.method5_combined_square(tensor_a, tensor_b)
-            else:  # '4d'
+            elif dim_type == '4d':
                 return multiplier.method5_combined_4d(tensor_a, tensor_b)
+            elif dim_type == '3d_4d':
+                return multiplier.method5_combined_3d_4d(tensor_a, tensor_b)
+            elif dim_type == '4d_3d':
+                return multiplier.method5_combined_4d_3d(tensor_a, tensor_b)
 
         else:
             raise ValueError(f"Unknown method: {method}")
@@ -765,8 +793,19 @@ class MatrixApp:
 
         method = int(self.method_var.get())
 
-        # Определяем тип размерности
-        dim_type = 'square' if self.tensor_a.dimension == 3 else '4d'
+        # Определяем тип умножения на основе размерностей тензоров
+        if self.tensor_a.dimension == 3 and self.tensor_b.dimension == 3:
+            dim_type = 'square'
+        elif self.tensor_a.dimension == 4 and self.tensor_b.dimension == 4:
+            dim_type = '4d'
+        elif self.tensor_a.dimension == 3 and self.tensor_b.dimension == 4:
+            dim_type = '3d_4d'
+        elif self.tensor_a.dimension == 4 and self.tensor_b.dimension == 3:
+            dim_type = '4d_3d'
+        else:
+            messagebox.showerror("Ошибка",
+                                 f"Неподдерживаемые размерности: A={self.tensor_a.dimension}D, B={self.tensor_b.dimension}D")
+            return
 
         try:
             start_time = time.time()
