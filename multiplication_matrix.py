@@ -3,7 +3,6 @@ from tkinter import ttk, messagebox, scrolledtext
 import random
 import time
 import re
-import numpy as np
 
 
 class Tensor:
@@ -109,12 +108,11 @@ class MunermanTensorMultiplier:
             i1, i2, i3 = key_a
             for key_b, value_b in tensor_b.data.items():
                 j1, j2, j3 = key_b
+                # Кэлиевы индексы: A(i2,i3) = B(i1,i2)
                 if i2 == j1 and i3 == j2:
-                    new_key = (i1, j3)
+                    new_key = (i1, j3)  # Свободные: A(i1), B(i3)
                     result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
-
-        result_dim = 2
-        return Tensor(result_dim, result_data)
+        return Tensor(2, result_data)
 
     @staticmethod
     def method1_cayley_4d(tensor_a, tensor_b):
@@ -124,12 +122,39 @@ class MunermanTensorMultiplier:
             i1, i2, i3, i4 = key_a
             for key_b, value_b in tensor_b.data.items():
                 j1, j2, j3, j4 = key_b
+                # Кэлиевы индексы: A(i3,i4) = B(i1,i2)
                 if i3 == j1 and i4 == j2:
-                    new_key = (i1, i2, j3, j4)
+                    new_key = (i1, i2, j3, j4)  # Свободные: A(i1,i2), B(i3,i4)
                     result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
+        return Tensor(4, result_data)
 
-        result_dim = 4
-        return Tensor(result_dim, result_data)
+    @staticmethod
+    def method1_cayley_3d_4d(tensor_a, tensor_b):
+        """(0,2)-свернутое произведение для 3D×4D тензоров"""
+        result_data = {}
+        for key_a, value_a in tensor_a.data.items():
+            i1, i2, i3 = key_a
+            for key_b, value_b in tensor_b.data.items():
+                j1, j2, j3, j4 = key_b
+                # Кэлиевы индексы: A(i2,i3) = B(i1,i2)
+                if i2 == j1 and i3 == j2:
+                    new_key = (i1, j3, j4)  # Свободные: A(i1), B(i3,i4)
+                    result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
+        return Tensor(3, result_data)
+
+    @staticmethod
+    def method1_cayley_4d_3d(tensor_a, tensor_b):
+        """(0,2)-свернутое произведение для 4D×3D тензоров"""
+        result_data = {}
+        for key_a, value_a in tensor_a.data.items():
+            i1, i2, i3, i4 = key_a
+            for key_b, value_b in tensor_b.data.items():
+                j1, j2, j3 = key_b
+                # Кэлиевы индексы: A(i3,i4) = B(i1,i2)
+                if i3 == j1 and i4 == j2:
+                    new_key = (i1, i2, j3)  # Свободные: A(i1,i2), B(i3)
+                    result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
+        return Tensor(3, result_data)
 
     @staticmethod
     def method2_cayley_square(tensor_a, tensor_b):
@@ -139,12 +164,11 @@ class MunermanTensorMultiplier:
             i1, i2, i3 = key_a
             for key_b, value_b in tensor_b.data.items():
                 j1, j2, j3 = key_b
+                # Кэлиев индекс: A(i3) = B(i1)
                 if i3 == j1:
-                    new_key = (i1, i2, j2, j3)
+                    new_key = (i1, i2, j2, j3)  # Свободные: A(i1,i2), B(i2,i3)
                     result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
-
-        result_dim = 4
-        return Tensor(result_dim, result_data)
+        return Tensor(4, result_data)
 
     @staticmethod
     def method2_cayley_4d(tensor_a, tensor_b):
@@ -154,102 +178,209 @@ class MunermanTensorMultiplier:
             i1, i2, i3, i4 = key_a
             for key_b, value_b in tensor_b.data.items():
                 j1, j2, j3, j4 = key_b
+                # Кэлиев индекс: A(i4) = B(i1)
                 if i4 == j1:
-                    new_key = (i1, i2, i3, j2, j3, j4)
+                    new_key = (i1, i2, i3, j2, j3, j4)  # Свободные: A(i1,i2,i3), B(i2,i3,i4)
                     result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
+        return Tensor(6, result_data)
 
-        result_dim = 6
-        return Tensor(result_dim, result_data)
+    @staticmethod
+    def method2_cayley_3d_4d(tensor_a, tensor_b):
+        """(0,1)-свернутое произведение для 3D×4D тензоров"""
+        result_data = {}
+        for key_a, value_a in tensor_a.data.items():
+            i1, i2, i3 = key_a
+            for key_b, value_b in tensor_b.data.items():
+                j1, j2, j3, j4 = key_b
+                # Кэлиев индекс: A(i3) = B(i1)
+                if i3 == j1:
+                    new_key = (i1, i2, j2, j3, j4)  # Свободные: A(i1,i2), B(i2,i3,i4)
+                    result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
+        return Tensor(5, result_data)
+
+    @staticmethod
+    def method2_cayley_4d_3d(tensor_a, tensor_b):
+        """(0,1)-свернутое произведение для 4D×3D тензоров"""
+        result_data = {}
+        for key_a, value_a in tensor_a.data.items():
+            i1, i2, i3, i4 = key_a
+            for key_b, value_b in tensor_b.data.items():
+                j1, j2, j3 = key_b
+                # Кэлиев индекс: A(i4) = B(i1)
+                if i4 == j1:
+                    new_key = (i1, i2, i3, j2, j3)  # Свободные: A(i1,i2,i3), B(i2,i3)
+                    result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
+        return Tensor(5, result_data)
 
     @staticmethod
     def method3_scott_square(tensor_a, tensor_b):
-        """(2,0)-свернутое произведение для 3D тензоров (без суммирования)"""
+        """(2,0)-свернутое произведение для 3D тензоров"""
         result_data = {}
         for key_a, value_a in tensor_a.data.items():
             i1, i2, i3 = key_a
             for key_b, value_b in tensor_b.data.items():
                 j1, j2, j3 = key_b
+                # Скоттовы индексы: A(i2,i3) = B(i1,i2)
                 if i2 == j1 and i3 == j2:
-                    new_key = (i1, i2, i3, j3)
-                    result_data[new_key] = value_a * value_b
-
-        result_dim = 4
-        return Tensor(result_dim, result_data)
+                    new_key = (i1, i2, i3, j3)  # Свободные: A(i1,i2,i3), B(i3)
+                    result_data[new_key] = value_a * value_b  # Без суммирования!
+        return Tensor(4, result_data)
 
     @staticmethod
     def method3_scott_4d(tensor_a, tensor_b):
-        """(2,0)-свернутое произведение для 4D тензоров (без суммирования)"""
+        """(2,0)-свернутое произведение для 4D тензоров"""
         result_data = {}
         for key_a, value_a in tensor_a.data.items():
             i1, i2, i3, i4 = key_a
             for key_b, value_b in tensor_b.data.items():
                 j1, j2, j3, j4 = key_b
-                if i2 == j1 and i3 == j2 and i4 == j3:
-                    new_key = (i1, i2, i3, i4, j4)
-                    result_data[new_key] = value_a * value_b
+                # Скоттовы индексы: A(i3,i4) = B(i1,i2)
+                if i3 == j1 and i4 == j2:
+                    new_key = (i1, i2, i3, i4, j3, j4)  # Свободные: A(i1,i2,i3,i4), B(i3,i4)
+                    result_data[new_key] = value_a * value_b  # Без суммирования!
+        return Tensor(6, result_data)
 
-        result_dim = 5
-        return Tensor(result_dim, result_data)
+    @staticmethod
+    def method3_scott_3d_4d(tensor_a, tensor_b):
+        """(2,0)-свернутое произведение для 3D×4D тензоров"""
+        result_data = {}
+        for key_a, value_a in tensor_a.data.items():
+            i1, i2, i3 = key_a
+            for key_b, value_b in tensor_b.data.items():
+                j1, j2, j3, j4 = key_b
+                # Скоттовы индексы: A(i2,i3) = B(i1,i2)
+                if i2 == j1 and i3 == j2:
+                    new_key = (i1, i2, i3, j3, j4)  # Свободные: A(i1,i2,i3), B(i3,i4)
+                    result_data[new_key] = value_a * value_b  # Без суммирования!
+        return Tensor(5, result_data)
+
+    @staticmethod
+    def method3_scott_4d_3d(tensor_a, tensor_b):
+        """(2,0)-свернутое произведение для 4D×3D тензоров"""
+        result_data = {}
+        for key_a, value_a in tensor_a.data.items():
+            i1, i2, i3, i4 = key_a
+            for key_b, value_b in tensor_b.data.items():
+                j1, j2, j3 = key_b
+                # Скоттовы индексы: A(i3,i4) = B(i1,i2)
+                if i3 == j1 and i4 == j2:
+                    new_key = (i1, i2, i3, i4, j3)  # Свободные: A(i1,i2,i3,i4), B(i3)
+                    result_data[new_key] = value_a * value_b  # Без суммирования!
+        return Tensor(5, result_data)
 
     @staticmethod
     def method4_scott_square(tensor_a, tensor_b):
-        """(1,0)-свернутое произведение для 3D тензоров (без суммирования)"""
+        """(1,0)-свернутое произведение для 3D тензоров"""
         result_data = {}
         for key_a, value_a in tensor_a.data.items():
             i1, i2, i3 = key_a
             for key_b, value_b in tensor_b.data.items():
                 j1, j2, j3 = key_b
+                # Скоттов индекс: A(i3) = B(i1)
                 if i3 == j1:
-                    new_key = (i1, i2, i3, j2, j3)
-                    result_data[new_key] = value_a * value_b
-
-        result_dim = 5
-        return Tensor(result_dim, result_data)
+                    new_key = (i1, i2, i3, j2, j3)  # Свободные: A(i1,i2,i3), B(i2,i3)
+                    result_data[new_key] = value_a * value_b  # Без суммирования!
+        return Tensor(5, result_data)
 
     @staticmethod
     def method4_scott_4d(tensor_a, tensor_b):
-        """(1,0)-свернутое произведение для 4D тензоров (без суммирования)"""
+        """(1,0)-свернутое произведение для 4D тензоров"""
         result_data = {}
         for key_a, value_a in tensor_a.data.items():
             i1, i2, i3, i4 = key_a
             for key_b, value_b in tensor_b.data.items():
                 j1, j2, j3, j4 = key_b
-                if i3 == j1 and i4 == j2:
-                    new_key = (i1, i2, i3, i4, j3, j4)
-                    result_data[new_key] = value_a * value_b
+                # Скоттов индекс: A(i4) = B(i1)
+                if i4 == j1:
+                    new_key = (i1, i2, i3, i4, j2, j3, j4)  # Свободные: A(i1,i2,i3,i4), B(i2,i3,i4)
+                    result_data[new_key] = value_a * value_b  # Без суммирования!
+        return Tensor(7, result_data)
 
-        result_dim = 6
-        return Tensor(result_dim, result_data)
+    @staticmethod
+    def method4_scott_3d_4d(tensor_a, tensor_b):
+        """(1,0)-свернутое произведение для 3D×4D тензоров"""
+        result_data = {}
+        for key_a, value_a in tensor_a.data.items():
+            i1, i2, i3 = key_a
+            for key_b, value_b in tensor_b.data.items():
+                j1, j2, j3, j4 = key_b
+                # Скоттов индекс: A(i3) = B(i1)
+                if i3 == j1:
+                    new_key = (i1, i2, i3, j2, j3, j4)  # Свободные: A(i1,i2,i3), B(i2,i3,i4)
+                    result_data[new_key] = value_a * value_b  # Без суммирования!
+        return Tensor(6, result_data)
+
+    @staticmethod
+    def method4_scott_4d_3d(tensor_a, tensor_b):
+        """(1,0)-свернутое произведение для 4D×3D тензоров"""
+        result_data = {}
+        for key_a, value_a in tensor_a.data.items():
+            i1, i2, i3, i4 = key_a
+            for key_b, value_b in tensor_b.data.items():
+                j1, j2, j3 = key_b
+                # Скоттов индекс: A(i4) = B(i1)
+                if i4 == j1:
+                    new_key = (i1, i2, i3, i4, j2, j3)  # Свободные: A(i1,i2,i3,i4), B(i2,i3)
+                    result_data[new_key] = value_a * value_b  # Без суммирования!
+        return Tensor(6, result_data)
 
     @staticmethod
     def method5_combined_square(tensor_a, tensor_b):
-        """Комбинированное (1,1)-свернутое произведение для 3D тензоров"""
+        """(1,1)-свернутое произведение для 3D тензоров"""
         result_data = {}
         for key_a, value_a in tensor_a.data.items():
             i1, i2, i3 = key_a
             for key_b, value_b in tensor_b.data.items():
                 j1, j2, j3 = key_b
+                # Кэлиев: A(i3) = B(i1), Скоттов: A(i2) = B(i2)
                 if i3 == j1 and i2 == j2:
-                    new_key = (i1, i2, j3)
+                    new_key = (i1, i2, j3)  # Свободные: A(i1,i2), B(i3)
                     result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
-
-        result_dim = 3
-        return Tensor(result_dim, result_data)
+        return Tensor(3, result_data)
 
     @staticmethod
     def method5_combined_4d(tensor_a, tensor_b):
-        """Комбинированное (1,1)-свернутое произведение для 4D тензоров"""
+        """(1,1)-свернутое произведение для 4D тензоров"""
         result_data = {}
         for key_a, value_a in tensor_a.data.items():
             i1, i2, i3, i4 = key_a
             for key_b, value_b in tensor_b.data.items():
                 j1, j2, j3, j4 = key_b
-                if i4 == j1 and i3 == j3 and i2 == j2:
-                    new_key = (i1, i2, i3, j4)
+                # Кэлиев: A(i4) = B(i1), Скоттов: A(i3) = B(i2)
+                if i4 == j1 and i3 == j2:
+                    new_key = (i1, i2, i3, j3, j4)  # Свободные: A(i1,i2,i3), B(i3,i4)
                     result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
+        return Tensor(5, result_data)
 
-        result_dim = 4
-        return Tensor(result_dim, result_data)
+    @staticmethod
+    def method5_combined_3d_4d(tensor_a, tensor_b):
+        """(1,1)-свернутое произведение для 3D×4D тензоров"""
+        result_data = {}
+        for key_a, value_a in tensor_a.data.items():
+            i1, i2, i3 = key_a
+            for key_b, value_b in tensor_b.data.items():
+                j1, j2, j3, j4 = key_b
+                # Кэлиев: A(i3) = B(i1), Скоттов: A(i2) = B(i2)
+                if i3 == j1 and i2 == j2:
+                    new_key = (i1, i2, j3, j4)  # Свободные: A(i1,i2), B(i3,i4)
+                    result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
+        return Tensor(4, result_data)
+
+    @staticmethod
+    def method5_combined_4d_3d(tensor_a, tensor_b):
+        """(1,1)-свернутое произведение для 4D×3D тензоров"""
+        result_data = {}
+        for key_a, value_a in tensor_a.data.items():
+            i1, i2, i3, i4 = key_a
+            for key_b, value_b in tensor_b.data.items():
+                j1, j2, j3 = key_b
+                # Кэлиев: A(i4) = B(i1), Скоттов: A(i3) = B(i2)
+                if i4 == j1 and i3 == j2:
+                    new_key = (i1, i2, i3, j3)  # Свободные: A(i1,i2,i3), B(i3)
+                    result_data[new_key] = result_data.get(new_key, 0) + value_a * value_b
+        return Tensor(4, result_data)
+
+
 
 
 class TensorOperations:
@@ -704,8 +835,8 @@ class MatrixEditor(tk.Toplevel):
         self.text_area.pack(fill='both', expand=True, pady=10)
 
         # Пример формата в стиле Соколова
-        example_text = "# Пример формата для 3D матрицы:\n[[1.00, 2.00; 3.00, 4.00], [5.00, 6.00; 7.00, 8.00]]\n\n"
-        example_text += "# Пример для 4D матрицы:\n[[[1.00, 2.00; 3.00, 4.00], [5.00, 6.00; 7.00, 8.00]], [[9.00, 10.00; 11.00, 12.00], [13.00, 14.00; 15.00, 16.00]]]"
+        example_text = "# Пример формата для 3D матрицы:\n[[[1, 2]; [3, 4]], [[5, 6]; [7.00, 8.00]]]\n\n"
+        example_text += "# Пример для 4D матрицы:\n[[[[1, 2]; [3, 4]], [[5, 6]; [7, 8]]], [[[9, 10]; [11, 12]], [[13, 14]; [15, 16]]]]"
         self.text_area.insert('1.0', example_text)
 
         # Кнопки
