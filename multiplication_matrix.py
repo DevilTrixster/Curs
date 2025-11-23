@@ -678,27 +678,38 @@ class MatrixApp:
         tensor_window = tk.Toplevel(self.root)
         tensor_window.title(f"Полный просмотр {title}")
         tensor_window.geometry("600x500")
+        tensor_window.minsize(400, 300)
+
+        # Основной контейнер
+        main_container = ttk.Frame(tensor_window)
+        main_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # Настраиваем веса
+        main_container.columnconfigure(0, weight=1)
+        main_container.rowconfigure(0, weight=1)
+        main_container.rowconfigure(1, weight=0)
 
         # Создаем текстовое поле с прокруткой
-        text_area = scrolledtext.ScrolledText(tensor_window, wrap=tk.WORD, width=100, height=30)
-        text_area.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        text_area = scrolledtext.ScrolledText(main_container, wrap=tk.WORD)
+        text_area.grid(row=0, column=0, sticky='nsew', pady=(0, 10))
 
         # Преобразуем тензор в строку в формате Соколова
         tensor_text = self.matrix_to_string_sokolov(tensor.to_nested_list())
         text_area.insert(tk.END, f"{title}:\n\n{tensor_text}")
         text_area.config(state=tk.DISABLED)
 
-        # Фрейм для кнопок
-        button_frame = ttk.Frame(tensor_window)
-        button_frame.pack(pady=10)
+        # Фрейм для кнопок - компактный, как в редакторе
+        button_frame = ttk.Frame(main_container)
+        button_frame.grid(row=1, column=0, sticky='')
 
-        # Кнопка копирования
+        # Кнопки с естественным размером (не растягиваются)
         ttk.Button(button_frame, text="Скопировать матрицу",
-                   command=lambda: self.copy_tensor_to_clipboard(tensor_text, tensor_window)).pack(side='left', padx=5)
+                   command=lambda: self.copy_tensor_to_clipboard(tensor_text, tensor_window)) \
+            .pack(side='left', padx=5)
 
-        # Кнопка закрытия
         ttk.Button(button_frame, text="Закрыть",
-                   command=tensor_window.destroy).pack(side='left', padx=5)
+                   command=tensor_window.destroy) \
+            .pack(side='left', padx=5)
 
     def copy_tensor_to_clipboard(self, tensor_text, tensor_window):
         self.root.clipboard_clear()
