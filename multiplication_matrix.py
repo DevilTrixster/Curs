@@ -4,7 +4,6 @@ import random
 import time
 import re
 
-
 class Tensor:
     def __init__(self, dimension, data=None):
         self.dimension = dimension
@@ -23,11 +22,11 @@ class Tensor:
         return list(self.data.keys())
 
     def to_nested_list(self):
-        """Convert tensor to nested list representation"""
+        """Преобразование тензора во вложенное списковое представление"""
         if not self.data:
             return []
 
-        # Find the shape
+        # Найдём форму
         shape = []
         for indices in self.data.keys():
             for i, idx in enumerate(indices):
@@ -36,31 +35,31 @@ class Tensor:
                 else:
                     shape[i] = max(shape[i], idx + 1)
 
-        # Create nested list structure
+        # Создание структуры вложенного списка
         result = self._create_nested_list(shape)
 
-        # Fill with values
+        # Заполнить значениями
         for indices, value in self.data.items():
             self._set_value_in_list(result, indices, value)
 
         return result
 
     def _create_nested_list(self, shape):
-        """Create empty nested list of given shape"""
+        """Создаём пустой вложенный список заданной формы"""
         if len(shape) == 1:
             return [0.0] * shape[0]
         else:
             return [self._create_nested_list(shape[1:]) for _ in range(shape[0])]
 
     def _set_value_in_list(self, lst, indices, value):
-        """Set value in nested list at given indices"""
+        """Установим значение во вложенном списке по заданным индексам"""
         if len(indices) == 1:
             lst[indices[0]] = value
         else:
             self._set_value_in_list(lst[indices[0]], indices[1:], value)
 
     def get_shape(self):
-        """Get the shape of the tensor"""
+        """Получаем форму тензора"""
         if not self.data:
             return ()
 
@@ -76,7 +75,7 @@ class Tensor:
 
     @classmethod
     def from_nested_list(cls, nested_list):
-        """Create a Tensor from a nested list"""
+        """Создаём тензор из вложенного списка"""
         data = {}
         dimension = cls._get_dimension(nested_list)
         cls._fill_data_from_list(nested_list, (), data)
@@ -84,14 +83,14 @@ class Tensor:
 
     @staticmethod
     def _get_dimension(lst):
-        """Calculate dimension of nested list"""
+        """Вычислить размер вложенного списка"""
         if not isinstance(lst, list) or len(lst) == 0:
             return 0
         return 1 + Tensor._get_dimension(lst[0])
 
     @staticmethod
     def _fill_data_from_list(lst, current_indices, data):
-        """Recursively fill tensor data from nested list"""
+        """Рекурсивно заполнять тензорные данные из вложенного списка"""
         if isinstance(lst, list):
             for i, item in enumerate(lst):
                 Tensor._fill_data_from_list(item, current_indices + (i,), data)
@@ -403,7 +402,7 @@ class TensorOperations:
         elif tensor_a.dimension == 4 and tensor_b.dimension == 3:
             dim_type = '4d_3d'
         else:
-            raise ValueError(f"Unsupported tensor dimensions: A={tensor_a.dimension}D, B={tensor_b.dimension}D")
+            raise ValueError(f"Неподдерживаемые тензорные размеры: A={tensor_a.dimension}D, B={tensor_b.dimension}D")
 
         if method == 1:
             if dim_type == 'square':
@@ -456,8 +455,7 @@ class TensorOperations:
                 return multiplier.method5_combined_4d_3d(tensor_a, tensor_b)
 
         else:
-            raise ValueError(f"Unknown method: {method}")
-
+            raise ValueError(f"Неизвестный метод: {method}")
 
 class MatrixApp:
     def __init__(self, root):
@@ -553,7 +551,7 @@ class MatrixApp:
         self.info_text = scrolledtext.ScrolledText(info_frame, height=12, width=80)
         self.info_text.pack(fill='both', expand=True)
         self.info_text.insert('1.0', "Добро пожаловать в приложение для работы с многомерными матрицами!\n\n")
-        self.info_text.insert('end', "Рекомендуемые формы матриц:\n")
+        self.info_text.insert('end', "Примеры форм матриц:\n")
         self.info_text.insert('end', "- 3D: [2,2,2], [2,3,2], [3,2,2]\n")
         self.info_text.insert('end', "- 4D: [2,2,2,2], [2,2,3,2], [2,3,2,2]\n\n")
         self.info_text.insert('end', "Методы умножения:\n")
@@ -679,7 +677,7 @@ class MatrixApp:
         # Создаем новое окно для отображения матрицы
         tensor_window = tk.Toplevel(self.root)
         tensor_window.title(f"Полный просмотр {title}")
-        tensor_window.geometry("800x600")
+        tensor_window.geometry("600x500")
 
         # Создаем текстовое поле с прокруткой
         text_area = scrolledtext.ScrolledText(tensor_window, wrap=tk.WORD, width=100, height=30)
@@ -708,7 +706,7 @@ class MatrixApp:
         tensor_window.destroy()
 
     def matrix_to_string_sokolov(self, matrix):
-        """Преобразование матрицы в строку по методу Соколова"""
+        """Преобразование матрицы в строку по частичному методу Соколова"""
         if isinstance(matrix, (int, float)):
             return f"{matrix:.2f}"
 
@@ -740,7 +738,7 @@ class MatrixApp:
         return str(matrix)
 
     def _format_nd_matrix_sokolov(self, matrix, dim, current_level=0):
-        """Рекурсивное форматирование многомерной матрицы по методу Соколова"""
+        """Рекурсивное форматирование многомерной матрицы по частичному методу Соколова"""
         if not isinstance(matrix, list) or len(matrix) == 0:
             return "[]"
 
@@ -874,7 +872,7 @@ class MatrixEditor(tk.Toplevel):
         self.text_area.pack(fill='both', expand=True, pady=10)
 
         # Пример формата в стиле Соколова
-        example_text = "# Пример формата для 3D матрицы:\n[[[1, 2]; [3, 4]], [[5, 6]; [7.00, 8.00]]]\n\n"
+        example_text = "# Пример формата для 3D матрицы:\n[[[1, 2]; [3, 4]], [[5, 6]; [7, 8]]]\n\n"
         example_text += "# Пример для 4D матрицы:\n[[[[1, 2]; [3, 4]], [[5, 6]; [7, 8]]], [[[9, 10]; [11, 12]], [[13, 14]; [15, 16]]]]"
         self.text_area.insert('1.0', example_text)
 
